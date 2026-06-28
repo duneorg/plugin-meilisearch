@@ -22,7 +22,7 @@
 import { MeilisearchClient } from "./client.ts";
 import { syncPages } from "./sync.ts";
 import type { PageLike } from "./sync.ts";
-import type { MeilisearchEngineOptions, MeilisearchDocument } from "./types.ts";
+import type { MeilisearchEngineOptions } from "./types.ts";
 
 /** Minimal SearchResult shape compatible with @dune/core SearchResult. */
 export interface SearchResult {
@@ -48,7 +48,14 @@ const DEFAULT_SETTINGS = {
   searchableAttributes: ["title", "body", "tags"],
   filterableAttributes: ["template", "language", "tags"],
   sortableAttributes: ["date"],
-  rankingRules: ["words", "typo", "proximity", "attribute", "sort", "exactness"],
+  rankingRules: [
+    "words",
+    "typo",
+    "proximity",
+    "attribute",
+    "sort",
+    "exactness",
+  ],
   typoTolerance: {
     enabled: true,
     minWordSizeForTypos: { oneTypo: 5, twoTypos: 9 },

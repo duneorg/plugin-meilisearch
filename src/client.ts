@@ -40,7 +40,9 @@ export class MeilisearchClient {
   // ── Internal helpers ────────────────────────────────────────────────────────
 
   #headers(): Record<string, string> {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
     if (this.#apiKey) headers["Authorization"] = `Bearer ${this.#apiKey}`;
     return headers;
   }
@@ -48,7 +50,10 @@ export class MeilisearchClient {
   async #request(path: string, init: RequestInit = {}): Promise<Response> {
     return await fetch(`${this.#url}${path}`, {
       ...init,
-      headers: { ...this.#headers(), ...(init.headers as Record<string, string> ?? {}) },
+      headers: {
+        ...this.#headers(),
+        ...(init.headers as Record<string, string> ?? {}),
+      },
     });
   }
 
@@ -89,28 +94,39 @@ export class MeilisearchClient {
   }
 
   /** Apply index settings. Safe to call multiple times (idempotent). */
-  async applySettings(settings: MeilisearchIndexSettings): Promise<MeilisearchTask> {
-    return await this.#json<MeilisearchTask>(`/indexes/${this.#index}/settings`, {
-      method: "PATCH",
-      body: JSON.stringify(settings),
-    });
+  async applySettings(
+    settings: MeilisearchIndexSettings,
+  ): Promise<MeilisearchTask> {
+    return await this.#json<MeilisearchTask>(
+      `/indexes/${this.#index}/settings`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(settings),
+      },
+    );
   }
 
   // ── Documents ───────────────────────────────────────────────────────────────
 
   /** Add or replace documents. Upserts by primary key (`id`). */
   async putDocuments(docs: unknown[]): Promise<MeilisearchTask> {
-    return await this.#json<MeilisearchTask>(`/indexes/${this.#index}/documents`, {
-      method: "PUT",
-      body: JSON.stringify(docs),
-    });
+    return await this.#json<MeilisearchTask>(
+      `/indexes/${this.#index}/documents`,
+      {
+        method: "PUT",
+        body: JSON.stringify(docs),
+      },
+    );
   }
 
   /** Delete all documents from the index (keeps settings). */
   async deleteAllDocuments(): Promise<MeilisearchTask> {
-    return await this.#json<MeilisearchTask>(`/indexes/${this.#index}/documents`, {
-      method: "DELETE",
-    });
+    return await this.#json<MeilisearchTask>(
+      `/indexes/${this.#index}/documents`,
+      {
+        method: "DELETE",
+      },
+    );
   }
 
   // ── Search ──────────────────────────────────────────────────────────────────

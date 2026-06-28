@@ -53,7 +53,11 @@ Deno.test("pageToDocument: basic mapping", () => {
 });
 
 Deno.test("pageToDocument: flattens taxonomy into tags", () => {
-  const doc = pageToDocument(makePage({ taxonomy: { tag: ["ewr", "demokratie"], category: ["politics"] } }));
+  const doc = pageToDocument(
+    makePage({
+      taxonomy: { tag: ["ewr", "demokratie"], category: ["politics"] },
+    }),
+  );
   assertEquals(Array.isArray(doc.tags), true);
   assertEquals((doc.tags as string[]).includes("ewr"), true);
   assertEquals((doc.tags as string[]).includes("demokratie"), true);

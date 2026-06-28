@@ -49,7 +49,7 @@ export { pageToDocument, routeToId, syncPages } from "./sync.ts";
 export type { PageLike } from "./sync.ts";
 export type {
   MeilisearchConfig,
+  MeilisearchDocument,
   MeilisearchEngineOptions,
   MeilisearchIndexSettings,
-  MeilisearchDocument,
 } from "./types.ts";

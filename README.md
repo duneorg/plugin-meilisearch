@@ -1,8 +1,11 @@
 # @dune/meilisearch
 
-[Meilisearch](https://www.meilisearch.com)-backed search engine for [Dune CMS](https://getdune.com) sites.
+[Meilisearch](https://www.meilisearch.com)-backed search engine for
+[Dune CMS](https://getdune.com) sites.
 
-Drop-in replacement for Dune's built-in in-memory search engine. Implements the same `SearchEngine` interface — no changes to templates or route handlers. Swap in when you need:
+Drop-in replacement for Dune's built-in in-memory search engine. Implements the
+same `SearchEngine` interface — no changes to templates or route handlers. Swap
+in when you need:
 
 - Typo tolerance and fuzzy matching
 - Language-aware stemming and compound word handling
@@ -42,10 +45,12 @@ const search = createMeilisearchEngine({
 On `build()`, the engine:
 
 1. Creates the Meilisearch index if it does not exist
-2. Applies index settings (searchable/filterable attributes, ranking rules, typo tolerance)
+2. Applies index settings (searchable/filterable attributes, ranking rules, typo
+   tolerance)
 3. Syncs all published pages as documents (delete-all then batch-put)
 
-On `rebuild(pages)`, the full sync runs again with the new page list — used automatically by `dune dev` on content changes.
+On `rebuild(pages)`, the full sync runs again with the new page list — used
+automatically by `dune dev` on content changes.
 
 ## Configuration
 
@@ -56,14 +61,21 @@ createMeilisearchEngine({
   url: "http://127.0.0.1:7700",
   apiKey: "your-api-key",
   index: "content",
-  excerptLength: 160,         // characters in returned excerpts
+  excerptLength: 160, // characters in returned excerpts
   settings: {
     // Override any Meilisearch index settings
     stopWords: ["der", "die", "das", "und", "in"],
     synonyms: {
       "eu": ["europäische union", "europa"],
     },
-    rankingRules: ["words", "typo", "proximity", "attribute", "sort", "exactness"],
+    rankingRules: [
+      "words",
+      "typo",
+      "proximity",
+      "attribute",
+      "sort",
+      "exactness",
+    ],
     typoTolerance: {
       enabled: true,
       minWordSizeForTypos: { oneTypo: 5, twoTypos: 9 },
@@ -76,17 +88,19 @@ createMeilisearchEngine({
 
 Applied on every `build()` unless overridden:
 
-| Setting | Default |
-|---------|---------|
-| `searchableAttributes` | `["title", "body", "tags"]` |
-| `filterableAttributes` | `["template", "language", "tags"]` |
-| `sortableAttributes` | `["date"]` |
-| `rankingRules` | words → typo → proximity → attribute → sort → exactness |
-| `typoTolerance` | enabled, oneTypo ≥ 5 chars, twoTypos ≥ 9 chars |
+| Setting                | Default                                                 |
+| ---------------------- | ------------------------------------------------------- |
+| `searchableAttributes` | `["title", "body", "tags"]`                             |
+| `filterableAttributes` | `["template", "language", "tags"]`                      |
+| `sortableAttributes`   | `["date"]`                                              |
+| `rankingRules`         | words → typo → proximity → attribute → sort → exactness |
+| `typoTolerance`        | enabled, oneTypo ≥ 5 chars, twoTypos ≥ 9 chars          |
 
 ## Custom facet fields
 
-If your site uses `system.search.facets` in `site.yaml` (Dune's `PageIndex.extra`), those fields are automatically spread onto Meilisearch documents and available for filtering:
+If your site uses `system.search.facets` in `site.yaml` (Dune's
+`PageIndex.extra`), those fields are automatically spread onto Meilisearch
+documents and available for filtering:
 
 ```yaml
 # site.yaml
@@ -96,7 +110,8 @@ system:
       - field: subtype
 ```
 
-With this config, `subtype` values (`kurzinfo`, `buchbesprechung`, etc.) are indexed and filterable via the standard Dune search API.
+With this config, `subtype` values (`kurzinfo`, `buchbesprechung`, etc.) are
+indexed and filterable via the standard Dune search API.
 
 ## Document schema
 
@@ -129,7 +144,8 @@ curl -L https://install.meilisearch.com | sh
 ./meilisearch
 ```
 
-For production, run Meilisearch as a systemd service on the same server as Dune and bind it to `127.0.0.1` only — no public exposure needed.
+For production, run Meilisearch as a systemd service on the same server as Dune
+and bind it to `127.0.0.1` only — no public exposure needed.
 
 ## License
 
