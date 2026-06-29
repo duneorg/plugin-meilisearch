@@ -81,7 +81,7 @@ function envOr(value: string | undefined, envKey: string): string | undefined {
  * Plugin factory. The Dune loader calls this with the merged plugin config
  * from `site.yaml`.
  */
-export default function meilisearchPlugin(
+function meilisearchPlugin(
   config: MeilisearchPluginConfig = {},
 ): DunePluginLike {
   const url = envOr(config.url, "MEILI_URL") ?? "http://127.0.0.1:7700";
@@ -115,3 +115,5 @@ export default function meilisearchPlugin(
 
 // The loader reads `.pluginName` to look up config before invoking the factory.
 meilisearchPlugin.pluginName = "meilisearch";
+
+export default meilisearchPlugin;
