@@ -78,8 +78,23 @@ function envOr(value: string | undefined, envKey: string): string | undefined {
 }
 
 /**
- * Plugin factory. The Dune loader calls this with the merged plugin config
- * from `site.yaml`.
+ * Dune plugin factory for Meilisearch-backed search.
+ *
+ * The Dune loader calls this with the merged plugin config from `site.yaml`.
+ * Registers an `onSearchEngineCreate` hook that swaps the built-in in-memory
+ * search engine for a Meilisearch backend. Full page bodies are indexed via the
+ * host's `loadText` helper; plugin-injected records (e.g. from
+ * `@dune/plugin-pdf`) are indexed too.
+ *
+ * Use via `site.yaml`:
+ * ```yaml
+ * plugins:
+ *   - src: "jsr:@dune/plugin-meilisearch"
+ *     config:
+ *       url: "http://127.0.0.1:7700"   # or env MEILI_URL
+ *       apiKey: "${MEILI_API_KEY}"      # or env MEILI_API_KEY
+ *       index: "content"
+ * ```
  */
 function meilisearchPlugin(
   config: MeilisearchPluginConfig = {},

@@ -9,23 +9,38 @@
 
 import type { MeilisearchConfig, MeilisearchIndexSettings } from "./types.ts";
 
+/** A single document returned by the Meilisearch search API, with optional highlight and score metadata. */
 export interface MeilisearchHit {
   [key: string]: unknown;
   _formatted?: Record<string, string>;
   _rankingScore?: number;
 }
 
+/** Response envelope returned by the Meilisearch `/indexes/{uid}/search` endpoint. */
 export interface MeilisearchSearchResponse {
+  /** Matched documents, each optionally decorated with `_formatted` and `_rankingScore`. */
   hits: MeilisearchHit[];
+  /** Approximate total number of matching documents. */
   estimatedTotalHits: number;
+  /** The search query that produced this response. */
   query: string;
 }
 
+/** Meilisearch async task reference returned by write operations (index, delete, settings). */
 export interface MeilisearchTask {
+  /** Unique task identifier, usable to poll task status. */
   taskUid: number;
+  /** Task status string (e.g. `"enqueued"`, `"succeeded"`, `"failed"`). */
   status?: string;
 }
 
+/**
+ * Minimal Meilisearch HTTP client using the Fetch API.
+ *
+ * Covers only the operations needed by the search engine: index creation,
+ * settings, document upsert/delete, and search. For full Meilisearch API
+ * access use the official `meilisearch-js` SDK instead.
+ */
 export class MeilisearchClient {
   readonly #url: string;
   readonly #index: string;

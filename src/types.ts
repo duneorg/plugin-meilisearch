@@ -63,10 +63,15 @@ export interface MeilisearchDocument {
   id: string;
   /** URL route — e.g. "/articles/my-article" */
   route: string;
+  /** Page title. */
   title: string;
+  /** Plain-text body for full-text indexing. */
   body: string;
+  /** Publication date in ISO 8601 format, or null if unset. */
   date: string | null;
+  /** Template name used for facet filtering. */
   template: string;
+  /** BCP 47 language code, e.g. `"en"`. */
   language: string;
   /** Taxonomy tags flattened: all values across all vocabs. */
   tags: string[];
