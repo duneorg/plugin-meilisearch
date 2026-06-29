@@ -1,6 +1,7 @@
 {
   "name": "@dune/plugin-meilisearch",
   "version": "0.2.0",
+  "description": "Meilisearch-backed search engine for Dune CMS sites — dune-plugin",
   "license": "MIT",
   "exports": {
     ".": "./src/mod.ts",
