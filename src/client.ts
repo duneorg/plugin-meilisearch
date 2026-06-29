@@ -12,7 +12,9 @@ import type { MeilisearchConfig, MeilisearchIndexSettings } from "./types.ts";
 /** A single document returned by the Meilisearch search API, with optional highlight and score metadata. */
 export interface MeilisearchHit {
   [key: string]: unknown;
+  /** Field values with highlight `<mark>` tags injected by Meilisearch. */
   _formatted?: Record<string, string>;
+  /** Normalised relevance score in the range [0, 1] (higher is better). */
   _rankingScore?: number;
 }
 

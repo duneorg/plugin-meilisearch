@@ -20,7 +20,11 @@
  */
 
 import { MeilisearchClient } from "./client.ts";
-import { injectedRecordToDocument, pageToDocument, syncDocuments } from "./sync.ts";
+import {
+  injectedRecordToDocument,
+  pageToDocument,
+  syncDocuments,
+} from "./sync.ts";
 import type { InjectedRecordLike, PageLike } from "./sync.ts";
 import type { MeilisearchEngineOptions } from "./types.ts";
 
@@ -38,9 +42,13 @@ export interface MeilisearchEngineRuntime {
 
 /** Minimal SearchResult shape compatible with @dune/core SearchResult. */
 export interface SearchResult {
+  /** The matched page (includes `sourcePath` for display purposes). */
   page: PageLike & { sourcePath: string };
+  /** Relevance score from Meilisearch's ranking (higher is better). */
   score: number;
+  /** Plain-text excerpt around the match, with `<mark>` highlight tags. */
   excerpt: string;
+  /** Lowercased query terms that produced highlights in this result. */
   highlights?: string[];
 }
 
@@ -49,9 +57,13 @@ export interface SearchResult {
  * Defined locally to avoid a circular dependency on @dune/core.
  */
 export interface SearchEngineInterface {
+  /** Build the search index (apply settings, sync all documents). Call after startup. */
   build(): Promise<void>;
+  /** Search for pages matching `query`. Returns up to `limit` results. */
   search(query: string, limit?: number): Promise<SearchResult[]>;
+  /** Rebuild the index after content changes (replaces all documents). */
   rebuild(pages: PageLike[]): Promise<void>;
+  /** Return autocomplete suggestions for a typed prefix string. */
   suggest(prefix: string, limit?: number): Promise<string[]>;
 }
 

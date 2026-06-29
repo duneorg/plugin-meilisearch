@@ -10,13 +10,21 @@ import type { MeilisearchClient } from "./client.ts";
 
 /** Minimal PageIndex shape this module requires. */
 export interface PageLike {
+  /** URL route, e.g. `/articles/my-post`. Used as the search result link. */
   route: string;
+  /** Page title indexed for weighted full-text search. */
   title: string;
+  /** Publication date in ISO 8601 format, or `null` if unset. */
   date: string | null;
+  /** Template name used as a facet/filter field. */
   template: string;
+  /** BCP 47 language code, e.g. `"en"`. */
   language: string;
+  /** Only published pages are included in the index. */
   published: boolean;
+  /** Taxonomy values keyed by vocabulary name (e.g. `{ tag: ["deno", "search"] }`). */
   taxonomy: Record<string, string[]>;
+  /** Extra frontmatter fields surfaced as custom facets. */
   extra?: Record<string, string | string[]>;
   /** Plain-text body to index. Populated by the engine via its body loader. */
   body?: string;
@@ -28,10 +36,15 @@ export interface PageLike {
  * `@dune/core`.
  */
 export interface InjectedRecordLike {
+  /** URL route for the search result link, e.g. `/pdf/report.pdf`. */
   route: string;
+  /** Display title shown in search results. */
   title: string;
+  /** Plain-text body to full-text index. */
   body: string;
+  /** Additional named fields indexed as searchable text (not displayed). */
   fields?: Record<string, string>;
+  /** Template label used for facet filtering. Defaults to `"page"`. */
   template?: string;
 }
 

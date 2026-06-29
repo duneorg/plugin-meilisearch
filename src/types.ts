@@ -45,15 +45,24 @@ export interface MeilisearchEngineOptions extends MeilisearchConfig {
 
 /** Meilisearch index-level settings. */
 export interface MeilisearchIndexSettings {
+  /** Fields searched by default. Order determines attribute weight. */
   searchableAttributes?: string[];
+  /** Fields available as filter/facet targets in search queries. */
   filterableAttributes?: string[];
+  /** Fields that can be used in `sort:` query parameters. */
   sortableAttributes?: string[];
+  /** Ordered list of ranking rules applied during result scoring. */
   rankingRules?: string[];
+  /** Typo-tolerance configuration. */
   typoTolerance?: {
+    /** Enable or disable typo tolerance globally. */
     enabled?: boolean;
+    /** Minimum word lengths before one/two typos are tolerated. */
     minWordSizeForTypos?: { oneTypo?: number; twoTypos?: number };
   };
+  /** Synonym map: each key expands to its listed equivalents during search. */
   synonyms?: Record<string, string[]>;
+  /** Words ignored during indexing and querying (common words, filler). */
   stopWords?: string[];
 }
 
