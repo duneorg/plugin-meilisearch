@@ -20,9 +20,21 @@
  */
 
 import { MeilisearchClient } from "./client.ts";
-import { syncPages } from "./sync.ts";
-import type { PageLike } from "./sync.ts";
+import { injectedRecordToDocument, pageToDocument, syncDocuments } from "./sync.ts";
+import type { InjectedRecordLike, PageLike } from "./sync.ts";
 import type { MeilisearchEngineOptions } from "./types.ts";
+
+/**
+ * Runtime wiring supplied by the Dune plugin layer (not by manual callers).
+ * Lets the engine populate document bodies and index plugin-injected records
+ * without depending on `@dune/core`.
+ */
+export interface MeilisearchEngineRuntime {
+  /** Load a page's plain-text body (Dune's `onSearchEngineCreate` `loadText`). */
+  loadText?: (page: PageLike) => Promise<string>;
+  /** Plugin-injected records (e.g. PDF text) to index alongside pages. */
+  injectedRecords?: InjectedRecordLike[];
+}
 
 /** Minimal SearchResult shape compatible with @dune/core SearchResult. */
 export interface SearchResult {
@@ -71,9 +83,11 @@ const DEFAULT_SETTINGS = {
 export function createMeilisearchEngine(
   options: MeilisearchEngineOptions,
   initialPages: PageLike[] = [],
+  runtime: MeilisearchEngineRuntime = {},
 ): SearchEngineInterface {
   const client = new MeilisearchClient(options);
   const excerptLength = options.excerptLength ?? 160;
+  const { loadText, injectedRecords = [] } = runtime;
 
   let pages = initialPages;
 
@@ -89,7 +103,21 @@ export function createMeilisearchEngine(
         ...(options.settings ?? {}),
       };
       await client.applySettings(settings);
-      await syncPages(client, pages);
+
+      // Build documents from published pages, populating body text via the
+      // loader when one is provided (otherwise fall back to any inline body).
+      const published = pages.filter((p) => p.published && p.route);
+      const pageDocs = await Promise.all(
+        published.map(async (p) => {
+          const body = loadText ? await loadText(p) : (p.body ?? "");
+          return pageToDocument({ ...p, body });
+        }),
+      );
+
+      // Include plugin-injected records (e.g. PDF text) when present.
+      const injectedDocs = injectedRecords.map(injectedRecordToDocument);
+
+      await syncDocuments(client, [...pageDocs, ...injectedDocs]);
     },
 
     // ── search ───────────────────────────────────────────────────────────────

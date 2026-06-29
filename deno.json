@@ -1,9 +1,10 @@
 {
   "name": "@dune/plugin-meilisearch",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "exports": {
     ".": "./src/mod.ts",
+    "./plugin": "./src/plugin.ts",
     "./engine": "./src/engine.ts",
     "./sync": "./src/sync.ts",
     "./client": "./src/client.ts"

@@ -1,5 +1,5 @@
 /**
- * @dune/meilisearch
+ * @dune/plugin-meilisearch
  *
  * Meilisearch-backed search engine for Dune sites.
  *
@@ -9,10 +9,28 @@
  * engine or need features like typo tolerance, language-aware stemming, or
  * synonym expansion.
  *
- * ## Quick start
+ * ## Quick start (plugin)
+ *
+ * The package default export is a Dune plugin. Enable it from `site.yaml` with
+ * no code:
+ *
+ * ```yaml
+ * plugins:
+ *   - src: "jsr:@dune/plugin-meilisearch"
+ *     config:
+ *       url: "http://127.0.0.1:7700"   # or env MEILI_URL
+ *       apiKey: "${MEILI_API_KEY}"      # or env MEILI_API_KEY
+ *       index: "content"
+ * ```
+ *
+ * Dune calls the engine's `build()` at startup and `rebuild()` on content
+ * changes. Full page bodies are indexed via the host's `loadText` helper, and
+ * any plugin-injected records (e.g. `@dune/plugin-pdf` text) are indexed too.
+ *
+ * ## Manual wiring
  *
  * ```ts
- * import { createMeilisearchEngine } from "@dune/meilisearch/engine";
+ * import { createMeilisearchEngine } from "@dune/plugin-meilisearch/engine";
  *
  * const search = createMeilisearchEngine({
  *   url: Deno.env.get("MEILI_URL") ?? "http://127.0.0.1:7700",
@@ -41,12 +59,24 @@
  * @module
  */
 
+export { default } from "./plugin.ts";
+export type { MeilisearchPluginConfig } from "./plugin.ts";
 export { createMeilisearchEngine } from "./engine.ts";
-export type { SearchEngineInterface, SearchResult } from "./engine.ts";
+export type {
+  MeilisearchEngineRuntime,
+  SearchEngineInterface,
+  SearchResult,
+} from "./engine.ts";
 export { MeilisearchClient } from "./client.ts";
 export type { MeilisearchHit, MeilisearchSearchResponse } from "./client.ts";
-export { pageToDocument, routeToId, syncPages } from "./sync.ts";
-export type { PageLike } from "./sync.ts";
+export {
+  injectedRecordToDocument,
+  pageToDocument,
+  routeToId,
+  syncDocuments,
+  syncPages,
+} from "./sync.ts";
+export type { InjectedRecordLike, PageLike } from "./sync.ts";
 export type {
   MeilisearchConfig,
   MeilisearchDocument,
