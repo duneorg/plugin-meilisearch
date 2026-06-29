@@ -6,7 +6,7 @@
  *
  * Usage:
  * ```ts
- * import { createMeilisearchEngine } from "@dune/meilisearch/engine";
+ * import { createMeilisearchEngine } from "@dune/plugin-meilisearch/engine";
  *
  * // In your Dune bootstrap or custom server entry:
  * const searchEngine = createMeilisearchEngine({
