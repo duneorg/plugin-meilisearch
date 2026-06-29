@@ -1,4 +1,4 @@
-# @dune/meilisearch
+# @dune/plugin-meilisearch
 
 [Meilisearch](https://www.meilisearch.com)-backed search engine for
 [Dune CMS](https://getdune.com) sites.
@@ -22,8 +22,8 @@ Add to your site's `deno.json`:
 ```json
 {
   "imports": {
-    "@dune/meilisearch": "jsr:@dune/meilisearch",
-    "@dune/meilisearch/engine": "jsr:@dune/meilisearch/engine"
+    "@dune/plugin-meilisearch": "jsr:@dune/plugin-meilisearch",
+    "@dune/plugin-meilisearch/engine": "jsr:@dune/plugin-meilisearch/engine"
   }
 }
 ```
@@ -33,7 +33,7 @@ Add to your site's `deno.json`:
 Pass the engine to Dune's bootstrap where a `SearchEngine` is expected:
 
 ```ts
-import { createMeilisearchEngine } from "@dune/meilisearch/engine";
+import { createMeilisearchEngine } from "@dune/plugin-meilisearch/engine";
 
 const search = createMeilisearchEngine({
   url: Deno.env.get("MEILI_URL") ?? "http://127.0.0.1:7700",
