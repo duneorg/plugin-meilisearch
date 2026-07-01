@@ -18,7 +18,8 @@ function makePage(overrides: Partial<PageLike> = {}): PageLike {
     taxonomy: { tag: ["ewr", "demokratie"] },
     extra: { subtype: "artikel" },
     ...overrides,
-  };
+    // deno-lint-ignore no-explicit-any
+  } as any;
 }
 
 // ── routeToId ─────────────────────────────────────────────────────────────────

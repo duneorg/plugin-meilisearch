@@ -29,7 +29,8 @@ Deno.test("plugin: onSearchEngineCreate assigns an engine to the payload", () =>
     register: (_name: string, _engine: unknown) => { data.engine = _engine; },
     setActiveEngine: (_name: string) => {},
   };
-  plugin.hooks.onSearchEngineCreate({ data });
+  // deno-lint-ignore no-explicit-any
+  plugin.hooks.onSearchEngineCreate!({ data } as any);
 
   assertExists(data.engine);
   const engine = data.engine as { build: unknown; search: unknown; rebuild: unknown; suggest: unknown };
