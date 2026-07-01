@@ -1,6 +1,6 @@
 {
   "name": "@dune/plugin-meilisearch",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "license": "MIT",
   "exports": {
     ".": "./src/mod.ts",
@@ -10,7 +10,9 @@
     "./client": "./src/client.ts"
   },
   "imports": {
-    "@std/assert": "jsr:@std/assert@^1"
+    "@std/assert": "jsr:@std/assert@^1",
+    "@dune/core": "jsr:@dune/core@^0.25",
+    "@dune/core/search": "jsr:@dune/core@^0.25/search"
   },
   "tasks": {
     "test": "deno test --allow-net --allow-env tests/",
