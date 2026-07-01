@@ -5,7 +5,7 @@
 
 import { assertEquals } from "@std/assert";
 import { pageToDocument, routeToId } from "../src/sync.ts";
-import type { PageLike } from "../src/sync.ts";
+import type { PageIndex as PageLike } from "@dune/core/search";
 
 function makePage(overrides: Partial<PageLike> = {}): PageLike {
   return {

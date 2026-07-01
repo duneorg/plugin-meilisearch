@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1] — 2026-07-01
+
+### Fixed
+
+- Removed `PageLike`/`InjectedRecordLike` re-export aliases — they caused deno doc to show alias properties without their JSDoc, lowering the JSR score. Tests now import directly from `@dune/core/search`.
+- Added JSDoc to `MeilisearchClient` constructor.
+
 ## [0.3.0] — 2026-07-01
 
 ### Changed

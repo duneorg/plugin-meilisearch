@@ -74,7 +74,6 @@ export {
   syncDocuments,
   syncPages,
 } from "./sync.ts";
-export type { InjectedRecordLike, PageLike } from "./sync.ts";
 export type {
   MeilisearchConfig,
   MeilisearchDocument,

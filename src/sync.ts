@@ -9,9 +9,6 @@ import type { PageIndex, InjectedSearchRecord } from "@dune/core/search";
 import type { MeilisearchDocument } from "./types.ts";
 import type { MeilisearchClient } from "./client.ts";
 
-// Re-export for consumers that imported these from this module.
-export type { PageIndex as PageLike, InjectedSearchRecord as InjectedRecordLike };
-
 /**
  * Convert a PageIndex entry to a Meilisearch document.
  *

@@ -48,6 +48,7 @@ export class MeilisearchClient {
   readonly #index: string;
   readonly #apiKey: string | undefined;
 
+  /** Create a client for the given Meilisearch instance. */
   constructor(config: MeilisearchConfig) {
     this.#url = config.url.replace(/\/$/, "");
     this.#index = config.index ?? "content";
