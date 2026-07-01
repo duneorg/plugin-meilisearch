@@ -62,11 +62,9 @@
 export { default } from "./plugin.ts";
 export type { MeilisearchPluginConfig } from "./plugin.ts";
 export { createMeilisearchEngine } from "./engine.ts";
-export type {
-  MeilisearchEngineRuntime,
-  SearchEngineInterface,
-  SearchResult,
-} from "./engine.ts";
+export type { MeilisearchEngineRuntime } from "./engine.ts";
+// SearchEngine and SearchResult are re-exported from @dune/core/search
+export type { SearchEngine, SearchResult } from "@dune/core/search";
 export { MeilisearchClient } from "./client.ts";
 export type { MeilisearchHit, MeilisearchSearchResponse } from "./client.ts";
 export {

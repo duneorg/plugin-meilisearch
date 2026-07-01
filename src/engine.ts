@@ -1,14 +1,13 @@
 /**
  * Meilisearch-backed SearchEngine implementation.
  *
- * Implements the same interface as Dune's built-in in-memory engine, but
- * delegates search and suggest calls to a Meilisearch instance over HTTP.
+ * Implements Dune's `SearchEngine` interface, delegating search and suggest
+ * calls to a Meilisearch instance over HTTP.
  *
  * Usage:
  * ```ts
  * import { createMeilisearchEngine } from "@dune/plugin-meilisearch/engine";
  *
- * // In your Dune bootstrap or custom server entry:
  * const searchEngine = createMeilisearchEngine({
  *   url: Deno.env.get("MEILI_URL") ?? "http://127.0.0.1:7700",
  *   apiKey: Deno.env.get("MEILI_API_KEY"),
@@ -19,52 +18,29 @@
  * @module
  */
 
+import type {
+  SearchEngine,
+  SearchResult,
+  PageIndex,
+  InjectedSearchRecord,
+} from "@dune/core/search";
 import { MeilisearchClient } from "./client.ts";
 import {
   injectedRecordToDocument,
   pageToDocument,
   syncDocuments,
 } from "./sync.ts";
-import type { InjectedRecordLike, PageLike } from "./sync.ts";
 import type { MeilisearchEngineOptions } from "./types.ts";
 
 /**
- * Runtime wiring supplied by the Dune plugin layer (not by manual callers).
- * Lets the engine populate document bodies and index plugin-injected records
- * without depending on `@dune/core`.
+ * Runtime wiring supplied by the Dune plugin layer.
+ * Lets the engine populate document bodies and index plugin-injected records.
  */
 export interface MeilisearchEngineRuntime {
   /** Load a page's plain-text body (Dune's `onSearchEngineCreate` `loadText`). */
-  loadText?: (page: PageLike) => Promise<string>;
+  loadText?: (page: PageIndex) => Promise<string>;
   /** Plugin-injected records (e.g. PDF text) to index alongside pages. */
-  injectedRecords?: InjectedRecordLike[];
-}
-
-/** Minimal SearchResult shape compatible with @dune/core SearchResult. */
-export interface SearchResult {
-  /** The matched page (includes `sourcePath` for display purposes). */
-  page: PageLike & { sourcePath: string };
-  /** Relevance score from Meilisearch's ranking (higher is better). */
-  score: number;
-  /** Plain-text excerpt around the match, with `<mark>` highlight tags. */
-  excerpt: string;
-  /** Lowercased query terms that produced highlights in this result. */
-  highlights?: string[];
-}
-
-/**
- * The interface this engine implements — a subset of @dune/core SearchEngine.
- * Defined locally to avoid a circular dependency on @dune/core.
- */
-export interface SearchEngineInterface {
-  /** Build the search index (apply settings, sync all documents). Call after startup. */
-  build(): Promise<void>;
-  /** Search for pages matching `query`. Returns up to `limit` results. */
-  search(query: string, limit?: number): Promise<SearchResult[]>;
-  /** Rebuild the index after content changes (replaces all documents). */
-  rebuild(pages: PageLike[]): Promise<void>;
-  /** Return autocomplete suggestions for a typed prefix string. */
-  suggest(prefix: string, limit?: number): Promise<string[]>;
+  injectedRecords?: InjectedSearchRecord[];
 }
 
 // Default index settings applied on build().
@@ -87,16 +63,13 @@ const DEFAULT_SETTINGS = {
 };
 
 /**
- * Create a Meilisearch-backed search engine.
- *
- * Pass this to Dune's bootstrap where a SearchEngine is expected.
- * All options except `url` are optional.
+ * Create a Meilisearch-backed search engine implementing Dune's `SearchEngine`.
  */
 export function createMeilisearchEngine(
   options: MeilisearchEngineOptions,
-  initialPages: PageLike[] = [],
+  initialPages: PageIndex[] = [],
   runtime: MeilisearchEngineRuntime = {},
-): SearchEngineInterface {
+): SearchEngine {
   const client = new MeilisearchClient(options);
   const excerptLength = options.excerptLength ?? 160;
   const { loadText, injectedRecords = [] } = runtime;
@@ -109,24 +82,20 @@ export function createMeilisearchEngine(
     async build(): Promise<void> {
       await client.ensureIndex();
 
-      // Merge user settings over defaults.
       const settings = {
         ...DEFAULT_SETTINGS,
         ...(options.settings ?? {}),
       };
       await client.applySettings(settings);
 
-      // Build documents from published pages, populating body text via the
-      // loader when one is provided (otherwise fall back to any inline body).
       const published = pages.filter((p) => p.published && p.route);
       const pageDocs = await Promise.all(
         published.map(async (p) => {
-          const body = loadText ? await loadText(p) : (p.body ?? "");
+          const body = loadText ? await loadText(p) : "";
           return pageToDocument({ ...p, body });
         }),
       );
 
-      // Include plugin-injected records (e.g. PDF text) when present.
       const injectedDocs = injectedRecords.map(injectedRecordToDocument);
 
       await syncDocuments(client, [...pageDocs, ...injectedDocs]);
@@ -141,7 +110,7 @@ export function createMeilisearchEngine(
         q: query,
         limit,
         attributesToCrop: ["body"],
-        cropLength: Math.ceil(excerptLength / 5), // words (≈5 chars each)
+        cropLength: Math.ceil(excerptLength / 5),
         attributesToHighlight: ["title", "body"],
         highlightPreTag: "<mark>",
         highlightPostTag: "</mark>",
@@ -155,17 +124,29 @@ export function createMeilisearchEngine(
           excerptLength,
         );
 
-        // Reconstruct a minimal PageLike from the stored document fields.
-        const page: PageLike & { sourcePath: string } = {
-          sourcePath: `${hit["route"] ?? ""}.md`,
-          route: (hit["route"] as string | undefined) ?? "",
+        // Reconstruct a PageIndex from stored document fields with defaults for
+        // fields not stored in Meilisearch.
+        const route = (hit["route"] as string | undefined) ?? "";
+        const page: PageIndex = {
+          sourcePath: `${route.replace(/^\//, "")}.md`,
+          route,
           title: (hit["title"] as string | undefined) ?? "",
+          navTitle: (hit["title"] as string | undefined) ?? "",
           date: (hit["date"] as string | null | undefined) ?? null,
-          template: (hit["template"] as string | undefined) ?? "",
+          template: (hit["template"] as string | undefined) ?? "page",
           language: (hit["language"] as string | undefined) ?? "en",
+          format: "md",
           published: true,
+          status: "published",
+          visible: true,
+          routable: true,
+          isModule: false,
+          order: 0,
+          depth: 1,
+          parentPath: null,
           taxonomy: {},
-          extra: {},
+          mtime: 0,
+          hash: "",
         };
 
         // Restore taxonomy from the flat `tags` array — best-effort.
@@ -174,7 +155,9 @@ export function createMeilisearchEngine(
           page.taxonomy = { tag: tags as string[] };
         }
 
-        const highlights = extractHighlightTerms(formatted);
+        const highlights = extractHighlightTerms(
+          formatted as Record<string, string>,
+        );
 
         return {
           page,
@@ -187,7 +170,7 @@ export function createMeilisearchEngine(
 
     // ── rebuild ──────────────────────────────────────────────────────────────
 
-    async rebuild(newPages: PageLike[]): Promise<void> {
+    async rebuild(newPages: PageIndex[]): Promise<void> {
       pages = newPages;
       await this.build();
     },
@@ -218,7 +201,6 @@ export function createMeilisearchEngine(
 
 /** Strip HTML tags and truncate to excerptLength characters. */
 function extractExcerpt(html: string, maxChars: number): string {
-  // Keep <mark> tags for highlight rendering; strip everything else.
   const text = html
     .replace(/<(?!\/?(mark)(?=>|\s))[^>]+>/gi, "")
     .replace(/\s+/g, " ")

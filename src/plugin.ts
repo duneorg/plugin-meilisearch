@@ -1,33 +1,29 @@
 /**
  * @dune/plugin-meilisearch — Dune plugin entry point.
  *
- * Replaces Dune's built-in search engine with a Meilisearch backend by
- * registering for the `onSearchEngineCreate` hook. Enable it from `site.yaml`
- * with no code:
+ * Registers Meilisearch as a named search engine via the `onSearchEngineCreate`
+ * hook. When `active` is true (the default), sets it as the active engine,
+ * replacing the built-in in-memory search. When `active` is false, the engine
+ * is registered but the built-in engine remains active — useful for running
+ * both in parallel mode.
+ *
+ * Enable from `site.yaml`:
  *
  * ```yaml
- * # site.yaml
  * plugins:
  *   - src: "jsr:@dune/plugin-meilisearch"
  *     config:
  *       url: "http://127.0.0.1:7700"   # or env MEILI_URL
  *       apiKey: "${MEILI_API_KEY}"      # or env MEILI_API_KEY
- *       index: "content"                # default: content
- *       # settings: { ... }             # optional Meilisearch index settings
+ *       index: "content"               # default: content
+ *       active: true                   # default: true
  * ```
- *
- * `url`/`apiKey` fall back to the `MEILI_URL` / `MEILI_API_KEY` environment
- * variables when not set in config. Dune calls the engine's `build()` at
- * startup and `rebuild()` on content changes; the plugin reuses the host's
- * `loadText` helper to index full page bodies, and indexes any plugin-injected
- * records (e.g. `@dune/plugin-pdf` text) alongside content pages.
- *
- * The lower-level `createMeilisearchEngine` remains exported from the package
- * root for custom wiring.
  *
  * @module
  */
 
+import type { SearchEngineCreateContext } from "@dune/core/search";
+import type { DunePlugin } from "@dune/core/hooks";
 import { createMeilisearchEngine } from "./engine.ts";
 import type { MeilisearchIndexSettings } from "./types.ts";
 
@@ -43,29 +39,16 @@ export interface MeilisearchPluginConfig {
   settings?: MeilisearchIndexSettings;
   /** Excerpt length in characters. @default 160 */
   excerptLength?: number;
+  /**
+   * Whether to set Meilisearch as the active search engine.
+   * Set to false to register the engine without activating it
+   * (useful when enabling parallel mode manually).
+   * @default true
+   */
+  active?: boolean;
 }
 
-/** Minimal structural view of the Dune plugin API used here. */
-interface DunePluginLike {
-  name: string;
-  version: string;
-  description?: string;
-  hooks: Record<string, (ctx: unknown) => unknown | Promise<unknown>>;
-}
-
-/** Structural view of the `onSearchEngineCreate` hook payload. */
-interface SearchEngineCreateData {
-  // deno-lint-ignore no-explicit-any
-  engine: any;
-  // deno-lint-ignore no-explicit-any
-  pages: any[];
-  // deno-lint-ignore no-explicit-any
-  injectedRecords: any[];
-  // deno-lint-ignore no-explicit-any
-  loadText: (page: any) => Promise<string>;
-}
-
-const PLUGIN_VERSION = "0.2.0";
+const PLUGIN_VERSION = "0.3.0";
 
 function envOr(value: string | undefined, envKey: string): string | undefined {
   if (value) return value;
@@ -81,26 +64,15 @@ function envOr(value: string | undefined, envKey: string): string | undefined {
  * Dune plugin factory for Meilisearch-backed search.
  *
  * The Dune loader calls this with the merged plugin config from `site.yaml`.
- * Registers an `onSearchEngineCreate` hook that swaps the built-in in-memory
- * search engine for a Meilisearch backend. Full page bodies are indexed via the
- * host's `loadText` helper; plugin-injected records (e.g. from
- * `@dune/plugin-pdf`) are indexed too.
- *
- * Use via `site.yaml`:
- * ```yaml
- * plugins:
- *   - src: "jsr:@dune/plugin-meilisearch"
- *     config:
- *       url: "http://127.0.0.1:7700"   # or env MEILI_URL
- *       apiKey: "${MEILI_API_KEY}"      # or env MEILI_API_KEY
- *       index: "content"
- * ```
+ * Registers a `meilisearch` engine via the `onSearchEngineCreate` hook and
+ * sets it as the active engine unless `config.active` is false.
  */
 function meilisearchPlugin(
   config: MeilisearchPluginConfig = {},
-): DunePluginLike {
+): DunePlugin {
   const url = envOr(config.url, "MEILI_URL") ?? "http://127.0.0.1:7700";
   const apiKey = envOr(config.apiKey, "MEILI_API_KEY");
+  const makeActive = config.active !== false;
 
   return {
     name: "meilisearch",
@@ -108,8 +80,8 @@ function meilisearchPlugin(
     description: "Meilisearch-backed search engine.",
     hooks: {
       onSearchEngineCreate: (ctx: unknown) => {
-        const data = (ctx as { data: SearchEngineCreateData }).data;
-        data.engine = createMeilisearchEngine(
+        const { data } = ctx as { data: SearchEngineCreateContext };
+        const engine = createMeilisearchEngine(
           {
             url,
             apiKey,
@@ -123,6 +95,10 @@ function meilisearchPlugin(
             injectedRecords: data.injectedRecords,
           },
         );
+        data.register("meilisearch", engine);
+        if (makeActive) {
+          data.setActiveEngine("meilisearch");
+        }
       },
     },
   };

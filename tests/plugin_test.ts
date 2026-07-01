@@ -26,6 +26,8 @@ Deno.test("plugin: onSearchEngineCreate assigns an engine to the payload", () =>
     pages: [],
     injectedRecords: [],
     loadText: () => Promise.resolve(""),
+    register: (_name: string, _engine: unknown) => { data.engine = _engine; },
+    setActiveEngine: (_name: string) => {},
   };
   plugin.hooks.onSearchEngineCreate({ data });
 
