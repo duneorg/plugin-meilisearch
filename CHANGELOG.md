@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0] — 2026-07-05
+
+First stable release. No breaking changes from 0.3.1 — the major bump marks
+the package's public API as stable going forward, per semver.
+
+### Fixed
+
+- **JSR doc-coverage score was still 61% despite the 0.3.1 fix.** That fix
+  only addressed one cause (property-losing re-export aliases); the larger
+  cause was that `deno_doc` resolves a re-exported symbol as an unresolved
+  reference carrying no JSDoc whenever its origin file is itself a separate
+  `deno.json` entrypoint — even when the origin declaration is fully
+  documented. Moving each re-export's doc comment to sit directly before the
+  specifier name, inside the export braces, fixes this; all 5 entrypoints
+  are now at 100% documented symbols.
+
 ## [0.3.1] — 2026-07-01
 
 ### Fixed

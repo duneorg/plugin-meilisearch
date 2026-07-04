@@ -59,19 +59,50 @@
  * @module
  */
 
-export { default } from "./plugin.ts";
-export type { MeilisearchPluginConfig } from "./plugin.ts";
-export { createMeilisearchEngine } from "./engine.ts";
-export type { MeilisearchEngineRuntime } from "./engine.ts";
+// Doc comments below are placed *inside* the export braces, immediately
+// before each specifier — not above the whole statement. deno_doc (and JSR's
+// doc-coverage check) resolves a re-exported symbol as an unresolved
+// "reference" node with no JSDoc whenever its origin file is itself a
+// separate deno.json entrypoint, discarding a comment placed above the
+// statement. A comment attached to the individual specifier survives.
+export {
+  /** The Dune plugin factory — see the module doc above for setup. */
+  default,
+} from "./plugin.ts";
+export type {
+  /** Configuration accepted from the `site.yaml` plugin entry. */
+  MeilisearchPluginConfig,
+} from "./plugin.ts";
+export {
+  /** Create a Meilisearch-backed search engine implementing Dune's `SearchEngine`. */
+  createMeilisearchEngine,
+} from "./engine.ts";
+export type {
+  /** Lets the engine populate document bodies and index plugin-injected records. */
+  MeilisearchEngineRuntime,
+} from "./engine.ts";
 // SearchEngine and SearchResult are re-exported from @dune/core/search
 export type { SearchEngine, SearchResult } from "@dune/core/search";
-export { MeilisearchClient } from "./client.ts";
-export type { MeilisearchHit, MeilisearchSearchResponse } from "./client.ts";
 export {
+  /** Minimal HTTP client wrapping Meilisearch's REST API. */
+  MeilisearchClient,
+} from "./client.ts";
+export type {
+  /** A single document returned by the Meilisearch search API, with optional highlight and score metadata. */
+  MeilisearchHit,
+  /** Response envelope returned by the Meilisearch `/indexes/{uid}/search` endpoint. */
+  MeilisearchSearchResponse,
+} from "./client.ts";
+export {
+  /** Convert a plugin-injected record (e.g. PDF text) to a Meilisearch document. */
   injectedRecordToDocument,
+  /** Convert a Dune page to a Meilisearch document, flattening taxonomy into tags. */
   pageToDocument,
+  /** Derive a stable Meilisearch document id from a route. */
   routeToId,
+  /** Push a set of pre-built documents to Meilisearch in batches. */
   syncDocuments,
+  /** Sync a set of pages to Meilisearch in batches (replaces the entire index content). */
   syncPages,
 } from "./sync.ts";
 export type {
