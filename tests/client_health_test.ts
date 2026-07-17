@@ -8,12 +8,22 @@ import { assertEquals } from "@std/assert";
 import { MeilisearchClient } from "../src/client.ts";
 
 const TEST_URL = Deno.env.get("MEILI_URL") ?? "http://127.0.0.1:7700";
-const TEST_KEY = Deno.env.get("MEILI_API_KEY") ?? "";
+const TEST_KEY = Deno.env.get("MEILI_API_KEY") ?? Deno.env.get("MEILI_MASTER_KEY") ?? "";
 
+// `/health` responds even when auth is enabled, so a reachable instance
+// isn't necessarily a *usable* one — probe a protected endpoint with the
+// configured key and skip if it comes back unauthorized.
 async function meiliAvailable(): Promise<boolean> {
   try {
-    const res = await fetch(`${TEST_URL}/health`);
-    return res.ok;
+    const healthRes = await fetch(`${TEST_URL}/health`);
+    await healthRes.body?.cancel();
+    if (!healthRes.ok) return false;
+
+    const authRes = await fetch(`${TEST_URL}/indexes`, {
+      headers: TEST_KEY ? { Authorization: `Bearer ${TEST_KEY}` } : {},
+    });
+    await authRes.body?.cancel();
+    return authRes.status !== 401 && authRes.status !== 403;
   } catch {
     return false;
   }

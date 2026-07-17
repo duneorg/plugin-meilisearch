@@ -90,6 +90,7 @@ export class MeilisearchClient {
   async isHealthy(): Promise<boolean> {
     try {
       const res = await this.#request("/health");
+      await res.body?.cancel();
       return res.ok;
     } catch {
       return false;
