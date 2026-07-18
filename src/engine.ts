@@ -19,10 +19,10 @@
  */
 
 import type {
+  InjectedSearchRecord,
+  PageIndex,
   SearchEngine,
   SearchResult,
-  PageIndex,
-  InjectedSearchRecord,
 } from "@dune/core/search";
 import { MeilisearchClient } from "./client.ts";
 import {

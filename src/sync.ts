@@ -5,7 +5,7 @@
  * @module
  */
 
-import type { PageIndex, InjectedSearchRecord } from "@dune/core/search";
+import type { InjectedSearchRecord, PageIndex } from "@dune/core/search";
 import type { MeilisearchDocument } from "./types.ts";
 import type { MeilisearchClient } from "./client.ts";
 

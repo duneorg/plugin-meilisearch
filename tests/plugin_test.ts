@@ -26,14 +26,21 @@ Deno.test("plugin: onSearchEngineCreate assigns an engine to the payload", () =>
     pages: [],
     injectedRecords: [],
     loadText: () => Promise.resolve(""),
-    register: (_name: string, _engine: unknown) => { data.engine = _engine; },
+    register: (_name: string, _engine: unknown) => {
+      data.engine = _engine;
+    },
     setActiveEngine: (_name: string) => {},
   };
   // deno-lint-ignore no-explicit-any
   plugin.hooks.onSearchEngineCreate!({ data } as any);
 
   assertExists(data.engine);
-  const engine = data.engine as { build: unknown; search: unknown; rebuild: unknown; suggest: unknown };
+  const engine = data.engine as {
+    build: unknown;
+    search: unknown;
+    rebuild: unknown;
+    suggest: unknown;
+  };
   assertEquals(typeof engine.build, "function");
   assertEquals(typeof engine.search, "function");
   assertEquals(typeof engine.rebuild, "function");

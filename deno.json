@@ -1,7 +1,11 @@
 {
   "name": "@dune/plugin-meilisearch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
+  "minimumDependencyAge": {
+    "age": "P1D",
+    "exclude": ["jsr:@dune/core"]
+  },
   "exports": {
     ".": "./src/mod.ts",
     "./plugin": "./src/plugin.ts",
@@ -11,8 +15,8 @@
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@^1",
-    "@dune/core": "jsr:@dune/core@0",
-    "@dune/core/search": "jsr:@dune/core@0/search"
+    "@dune/core": "jsr:@dune/core@0.31",
+    "@dune/core/search": "jsr:@dune/core@0.31/search"
   },
   "tasks": {
     "test": "deno test --allow-net --allow-env tests/",

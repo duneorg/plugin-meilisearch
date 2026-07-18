@@ -8,7 +8,8 @@ import { assertEquals } from "@std/assert";
 import { MeilisearchClient } from "../src/client.ts";
 
 const TEST_URL = Deno.env.get("MEILI_URL") ?? "http://127.0.0.1:7700";
-const TEST_KEY = Deno.env.get("MEILI_API_KEY") ?? Deno.env.get("MEILI_MASTER_KEY") ?? "";
+const TEST_KEY = Deno.env.get("MEILI_API_KEY") ??
+  Deno.env.get("MEILI_MASTER_KEY") ?? "";
 
 // `/health` responds even when auth is enabled, so a reachable instance
 // isn't necessarily a *usable* one — probe a protected endpoint with the
