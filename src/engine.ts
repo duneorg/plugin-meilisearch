@@ -19,9 +19,12 @@
  */
 
 import type {
+  FacetCounts,
   InjectedSearchRecord,
   PageIndex,
   SearchEngine,
+  SearchFilter,
+  SearchOptions,
   SearchResult,
 } from "@dune/core/search";
 import { MeilisearchClient } from "./client.ts";
@@ -43,10 +46,14 @@ export interface MeilisearchEngineRuntime {
   injectedRecords?: InjectedSearchRecord[];
 }
 
-// Default index settings applied on build().
+// Default index settings applied on build(). "subtype" covers the common
+// case of a site-declared facet field (see `system.search.facets` in
+// site.yaml) — harmless to leave filterable/facetable when a site doesn't
+// use it. Sites with other custom facet fields should extend this via
+// `options.settings`.
 const DEFAULT_SETTINGS = {
   searchableAttributes: ["title", "body", "tags"],
-  filterableAttributes: ["template", "language", "tags"],
+  filterableAttributes: ["template", "language", "tags", "subtype"],
   sortableAttributes: ["date"],
   rankingRules: [
     "words",
@@ -103,7 +110,11 @@ export function createMeilisearchEngine(
 
     // ── search ───────────────────────────────────────────────────────────────
 
-    async search(query: string, limit = 20): Promise<SearchResult[]> {
+    async search(
+      query: string,
+      limit = 20,
+      options?: SearchOptions,
+    ): Promise<SearchResult[]> {
       if (!query.trim()) return [];
 
       const response = await client.search({
@@ -114,6 +125,10 @@ export function createMeilisearchEngine(
         attributesToHighlight: ["title", "body"],
         highlightPreTag: "<mark>",
         highlightPostTag: "</mark>",
+        sort: options?.sort === "date" ? ["date:desc"] : undefined,
+        filter: options?.filter
+          ? meilisearchFilterExpr(options.filter)
+          : undefined,
       });
 
       return response.hits.map((hit) => {
@@ -155,6 +170,13 @@ export function createMeilisearchEngine(
           page.taxonomy = { tag: tags as string[] };
         }
 
+        // Restore custom facet fields (e.g. `subtype`) so callers can treat
+        // results from this engine the same way as the built-in engine's
+        // PageIndex.extra.
+        if (typeof hit["subtype"] === "string") {
+          page.extra = { subtype: hit["subtype"] };
+        }
+
         const highlights = extractHighlightTerms(
           formatted as Record<string, string>,
         );
@@ -166,6 +188,18 @@ export function createMeilisearchEngine(
           highlights,
         };
       });
+    },
+
+    // ── facetCounts ──────────────────────────────────────────────────────────
+
+    async facetCounts(query: string, field: string): Promise<FacetCounts> {
+      if (!query.trim()) return {};
+      const response = await client.search({
+        q: query,
+        limit: 0,
+        facets: [field],
+      });
+      return response.facetDistribution?.[field] ?? {};
     },
 
     // ── rebuild ──────────────────────────────────────────────────────────────
@@ -198,6 +232,20 @@ export function createMeilisearchEngine(
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+// Field names are only ever supplied by trusted config/route code (never
+// directly from a request), but validate defensively before interpolating
+// into a Meilisearch filter expression.
+const SAFE_FIELD_RE = /^[a-zA-Z_][a-zA-Z0-9_.]*$/;
+
+/** Build a Meilisearch filter expression string from a {@link SearchFilter}. */
+function meilisearchFilterExpr(filter: SearchFilter): string {
+  if (!SAFE_FIELD_RE.test(filter.field)) {
+    throw new Error(`Invalid search filter field: ${filter.field}`);
+  }
+  const escapedValue = filter.value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return `${filter.field} = "${escapedValue}"`;
+}
 
 /** Strip HTML tags and truncate to excerptLength characters. */
 function extractExcerpt(html: string, maxChars: number): string {

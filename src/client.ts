@@ -26,6 +26,8 @@ export interface MeilisearchSearchResponse {
   estimatedTotalHits: number;
   /** The search query that produced this response. */
   query: string;
+  /** Value → count map per requested facet field, present when `facets` was passed to the request. */
+  facetDistribution?: Record<string, Record<string, number>>;
 }
 
 /** Meilisearch async task reference returned by write operations (index, delete, settings). */
@@ -160,6 +162,12 @@ export class MeilisearchClient {
     highlightPreTag?: string;
     highlightPostTag?: string;
     attributesToRetrieve?: string[];
+    /** e.g. `["date:desc"]` — the field must be listed in `sortableAttributes`. */
+    sort?: string[];
+    /** Meilisearch filter expression, e.g. `subtype = "artikel"` — the field must be listed in `filterableAttributes`. */
+    filter?: string;
+    /** Field names to compute value-distribution counts for — the field must be listed in `filterableAttributes`. */
+    facets?: string[];
   }): Promise<MeilisearchSearchResponse> {
     return await this.#json<MeilisearchSearchResponse>(
       `/indexes/${this.#index}/search`,
