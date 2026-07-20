@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.1.0] — 2026-07-20
+
+### Added
+
+- **`filter`/`sort` options and `facetCounts()`** — implements the
+  `SearchOptions`/`FacetCounts` additions from `@dune/core@0.31.1` (search
+  filter/sort/facets support). `filter` narrows results to a single
+  `field=value` match; `sort: "date"` orders newest-first; `facetCounts(query,
+  field)` returns a value→count map. `subtype` added to `filterableAttributes`
+  by default so a site's facet config works out of the box.
+
+### Fixed
+
+- **`sort: "date"` barely reordered results.** Meilisearch's stock
+  `rankingRules` order only lets `sort` break ties *after* relevance scoring —
+  verified against a real 4500-document index that this meant sort=date had
+  almost no visible effect. Moved `sort` to the front of the default
+  `rankingRules` so it takes priority over relevance when a caller explicitly
+  requests it; a plain relevance search (no `sort` param) is unaffected.
+
 ## [1.0.1] — 2026-07-18
 
 ### Fixed

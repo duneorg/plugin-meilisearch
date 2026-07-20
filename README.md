@@ -91,9 +91,9 @@ Applied on every `build()` unless overridden:
 | Setting                | Default                                                 |
 | ---------------------- | ------------------------------------------------------- |
 | `searchableAttributes` | `["title", "body", "tags"]`                             |
-| `filterableAttributes` | `["template", "language", "tags"]`                      |
+| `filterableAttributes` | `["template", "language", "tags", "subtype"]`           |
 | `sortableAttributes`   | `["date"]`                                              |
-| `rankingRules`         | words → typo → proximity → attribute → sort → exactness |
+| `rankingRules`         | sort → words → typo → proximity → attribute → exactness |
 | `typoTolerance`        | enabled, oneTypo ≥ 5 chars, twoTypos ≥ 9 chars          |
 
 ## Custom facet fields
