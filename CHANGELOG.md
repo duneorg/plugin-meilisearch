@@ -13,6 +13,13 @@
 
 ### Fixed
 
+- **The `@dune/core` pin (`0.31`) floored below the exports this release
+  needs.** JSR validates a subpath import against the *oldest* version
+  satisfying the declared range, and `0.31.0` predates the `FacetCounts`/
+  `SearchFilter`/`SearchOptions` exports added in `0.31.1` — first publish
+  attempt failed type-checking against that floor. Narrowed to `^0.31.1`,
+  which still tracks future `0.31.x` patches but floors at the version that
+  actually has these exports.
 - **`sort: "date"` barely reordered results.** Meilisearch's stock
   `rankingRules` order only lets `sort` break ties *after* relevance scoring —
   verified against a real 4500-document index that this meant sort=date had
