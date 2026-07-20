@@ -78,9 +78,19 @@ async function withEngine(
     index: TEST_INDEX,
   });
 
+  // Article A's title contains the query term ("europe"), Post B and PDF
+  // C's don't — this creates a genuine "attribute" ranking-rule win for
+  // Article A (Meilisearch ranks a title match over a body-only match),
+  // not just a score difference invisible to the coarse ranking rules.
+  // Regression coverage for a real bug: with Meilisearch's stock
+  // rankingRules order (sort after attribute), sort=date only broke ties
+  // *after* this kind of relevance win, so Article A stayed first even
+  // when sorting by date — a synthetic fixture without this title/body
+  // distinction doesn't reproduce the bug, since word-repetition alone
+  // isn't visible to the "attribute" rule.
   const pages: PageIndex[] = [
     makePage({
-      title: "Article A",
+      title: "Europe Article A",
       route: "/a",
       template: "article",
       extra: { subtype: "artikel" },
@@ -102,10 +112,16 @@ async function withEngine(
     }),
   ];
 
+  const bodyByRoute: Record<string, string> = {
+    "/a": "europe policy discussion",
+    "/b": "europe policy discussion",
+    "/c": "europe policy discussion",
+  };
+
   const engine = createMeilisearchEngine(
     { url: TEST_URL, apiKey: TEST_KEY, index: TEST_INDEX },
     pages,
-    { loadText: () => Promise.resolve("europe policy discussion") },
+    { loadText: (page) => Promise.resolve(bodyByRoute[page.route] ?? "") },
   );
 
   try {
@@ -123,7 +139,7 @@ Deno.test("meilisearch engine: filter narrows to matching subtype", async () => 
       filter: { field: "subtype", value: "artikel" },
     });
     assertEquals(results.length, 1);
-    assertEquals(results[0].page.title, "Article A");
+    assertEquals(results[0].page.title, "Europe Article A");
     assertEquals(results[0].page.extra?.subtype, "artikel");
   });
 });
@@ -138,7 +154,7 @@ Deno.test("meilisearch engine: no filter returns all matches", async () => {
 Deno.test("meilisearch engine: sort=date orders newest first", async () => {
   await withEngine(async (engine) => {
     const results = await engine.search("europe", 10, { sort: "date" });
-    assertEquals(results.map((r) => r.page.title), ["Post B", "PDF C", "Article A"]);
+    assertEquals(results.map((r) => r.page.title), ["Post B", "PDF C", "Europe Article A"]);
   });
 });
 

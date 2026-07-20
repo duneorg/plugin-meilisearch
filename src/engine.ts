@@ -51,16 +51,25 @@ export interface MeilisearchEngineRuntime {
 // site.yaml) — harmless to leave filterable/facetable when a site doesn't
 // use it. Sites with other custom facet fields should extend this via
 // `options.settings`.
+// "sort" is placed first (ahead of Meilisearch's stock default position,
+// which is after "attribute") so that engine.search(query, limit, {sort:
+// "date"}) produces a true chronological ordering. A ranking rule only
+// takes priority over the criteria listed after it — with "sort" in its
+// stock position, an explicit sort:["date:desc"] request only broke ties
+// *after* relevance scoring, which for any query with more than a few
+// matches meant it barely reordered anything. This has no effect on plain
+// relevance search: "sort" is a no-op unless the caller explicitly passes
+// a sort parameter.
 const DEFAULT_SETTINGS = {
   searchableAttributes: ["title", "body", "tags"],
   filterableAttributes: ["template", "language", "tags", "subtype"],
   sortableAttributes: ["date"],
   rankingRules: [
+    "sort",
     "words",
     "typo",
     "proximity",
     "attribute",
-    "sort",
     "exactness",
   ],
   typoTolerance: {
