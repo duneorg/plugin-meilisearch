@@ -33,7 +33,9 @@ async function meiliAvailable(): Promise<boolean> {
   }
 }
 
-function makePage(overrides: Partial<PageIndex> & { title: string; route: string }): PageIndex {
+function makePage(
+  overrides: Partial<PageIndex> & { title: string; route: string },
+): PageIndex {
   return {
     sourcePath: `${overrides.route.slice(1)}.md`,
     language: "en",
@@ -151,10 +153,33 @@ Deno.test("meilisearch engine: no filter returns all matches", async () => {
   });
 });
 
+Deno.test("meilisearch engine: offset pages through results without gaps or dupes", async () => {
+  await withEngine(async (engine) => {
+    const page1 = await engine.search("europe", 2, { sort: "date", offset: 0 });
+    const page2 = await engine.search("europe", 2, { sort: "date", offset: 2 });
+    assertEquals(page1.length, 2);
+    assertEquals(page2.length, 1);
+    const titles = [...page1, ...page2].map((r) => r.page.title);
+    assertEquals(new Set(titles).size, 3);
+    assertEquals(titles, ["Post B", "PDF C", "Europe Article A"]);
+  });
+});
+
+Deno.test("meilisearch engine: offset beyond the result count returns an empty page", async () => {
+  await withEngine(async (engine) => {
+    const results = await engine.search("europe", 10, { offset: 100 });
+    assertEquals(results, []);
+  });
+});
+
 Deno.test("meilisearch engine: sort=date orders newest first", async () => {
   await withEngine(async (engine) => {
     const results = await engine.search("europe", 10, { sort: "date" });
-    assertEquals(results.map((r) => r.page.title), ["Post B", "PDF C", "Europe Article A"]);
+    assertEquals(results.map((r) => r.page.title), [
+      "Post B",
+      "PDF C",
+      "Europe Article A",
+    ]);
   });
 });
 
