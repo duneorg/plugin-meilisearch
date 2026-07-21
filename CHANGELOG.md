@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.0] — 2026-07-21
+
+### Added
+
+- **`offset` passthrough for pagination**, threading `SearchOptions.offset`
+  (added in `@dune/core@0.31.2`) into Meilisearch's native `offset` search
+  param — lets a caller page through a result set instead of only ever
+  getting the first page.
+
+### Fixed
+
+- **`@dune/core` pin narrowed to `^0.31.2`.** `offset` doesn't exist on
+  `SearchOptions` before that version — the previous `^0.31.1` pin's floor
+  would type-check against a core version that predates this release's own
+  dependency, the same JSR-oldest-version-in-range issue hit last release.
+  `deno.lock` regenerated to match (was still resolving `@dune/core` to
+  `0.31.0` from the original unbounded pin).
+
 ## [1.1.0] — 2026-07-20
 
 ### Added
