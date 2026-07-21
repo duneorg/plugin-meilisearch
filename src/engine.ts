@@ -129,6 +129,7 @@ export function createMeilisearchEngine(
       const response = await client.search({
         q: query,
         limit,
+        offset: options?.offset,
         attributesToCrop: ["body"],
         cropLength: Math.ceil(excerptLength / 5),
         attributesToHighlight: ["title", "body"],

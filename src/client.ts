@@ -156,6 +156,8 @@ export class MeilisearchClient {
   async search(params: {
     q: string;
     limit?: number;
+    /** Number of results to skip — for paging through a result set. */
+    offset?: number;
     attributesToCrop?: string[];
     cropLength?: number;
     attributesToHighlight?: string[];
