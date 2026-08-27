@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.3] — 2026-08-27
+
+### Fixed
+
+- **`@dune/core` pin bumped to `^0.34.0`.** The previous `^0.33.0` range didn't
+  cover `@dune/core`'s current version — a site running a newer core would have
+  loaded a second, stale copy just for this plugin. No behavior change; nothing
+  in this release depends on a 0.34-only export.
+
 ## [1.2.2] — 2026-08-24
 
 ### Fixed
