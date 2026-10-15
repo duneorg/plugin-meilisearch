@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.4] — 2026-10-15
+
+### Security
+
+- **Hardened HTML stripping in search-result excerpts.** Excerpts are now built
+  so they can only contain the plugin's own `<mark>`/`</mark>` highlight tags;
+  all other markup, including malformed or nested markup in indexed content, is
+  removed.
+
+### Fixed
+
+- **Excerpt truncation now counts visible characters and respects markup.**
+  `excerptLength` no longer counts the highlight tags' own text, truncation can
+  no longer cut inside a `<mark>` tag or split an emoji, and a highlight that is
+  still open at the cut is closed. Excerpts with highlights may therefore carry
+  slightly more raw markup than before for the same `excerptLength`; the visible
+  text length is the same.
+
 ## [1.2.3] — 2026-08-27
 
 ### Fixed
