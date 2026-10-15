@@ -28,6 +28,7 @@ import type {
   SearchResult,
 } from "@dune/core/search";
 import { MeilisearchClient } from "./client.ts";
+import { extractExcerpt } from "./excerpt.ts";
 import {
   injectedRecordToDocument,
   pageToDocument,
@@ -255,15 +256,6 @@ function meilisearchFilterExpr(filter: SearchFilter): string {
   }
   const escapedValue = filter.value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
   return `${filter.field} = "${escapedValue}"`;
-}
-
-/** Strip HTML tags and truncate to excerptLength characters. */
-function extractExcerpt(html: string, maxChars: number): string {
-  const text = html
-    .replace(/<(?!\/?(mark)(?=>|\s))[^>]+>/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  return text.length > maxChars ? text.slice(0, maxChars) + "…" : text;
 }
 
 /** Extract highlighted terms from Meilisearch's _formatted object. */
