@@ -9,6 +9,14 @@
 
 import type { MeilisearchConfig, MeilisearchIndexSettings } from "./types.ts";
 
+/** A non-2xx answer from Meilisearch. `status` is the HTTP status code. */
+export class MeilisearchHttpError extends Error {
+  override name = "MeilisearchHttpError";
+  constructor(readonly status: number, readonly path: string, body: string) {
+    super(`Meilisearch ${status} at ${path}: ${body}`);
+  }
+}
+
 /** A single document returned by the Meilisearch search API, with optional highlight and score metadata. */
 export interface MeilisearchHit {
   [key: string]: unknown;
@@ -80,8 +88,7 @@ export class MeilisearchClient {
   async #json<T>(path: string, init: RequestInit = {}): Promise<T> {
     const res = await this.#request(path, init);
     if (!res.ok) {
-      const body = await res.text();
-      throw new Error(`Meilisearch ${res.status} at ${path}: ${body}`);
+      throw new MeilisearchHttpError(res.status, path, await res.text());
     }
     return await res.json() as T;
   }
@@ -110,7 +117,7 @@ export class MeilisearchClient {
       });
     } catch (err) {
       // 409 Conflict = index already exists — that's fine.
-      if (err instanceof Error && !err.message.includes("409")) throw err;
+      if (!(err instanceof MeilisearchHttpError && err.status === 409)) throw err;
     }
   }
 
