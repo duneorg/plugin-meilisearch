@@ -1,6 +1,6 @@
 {
   "name": "@dune/plugin-meilisearch",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "license": "MIT",
   "minimumDependencyAge": {
     "age": "P1D",

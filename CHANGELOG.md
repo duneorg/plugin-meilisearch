@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.2.6] — 2026-11-03
+
 ### Changed
 
 - **Tells Dune which Meilisearch failures retrying cannot fix.** `@dune/core`
