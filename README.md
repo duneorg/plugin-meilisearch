@@ -147,6 +147,18 @@ curl -L https://install.meilisearch.com | sh
 For production, run Meilisearch as a systemd service on the same server as Dune
 and bind it to `127.0.0.1` only — no public exposure needed.
 
+## When Meilisearch is down
+
+With a recent `@dune/core` (the release that adds `SearchConfigError`), an unreachable Meilisearch does not stop your site from starting:
+
+- Dune logs `search.engine.failed` once, with the cause, and keeps serving content.
+- Search is answered by Dune's built-in engine until Meilisearch is back. Ranking differs, but search keeps working.
+- Dune retries in the background (5 s, doubling up to 5 min) and switches back on its own. `/health` shows `"degraded"` in the meantime.
+
+Some failures cannot be fixed by retrying, so they stop startup with a message instead: a rejected API key (`401`), a key without the needed permissions (`403`), and invalid `index` or `settings` (`400`). Connection errors, timeouts and `5xx` responses are treated as temporary.
+
+Older cores stop startup on any Meilisearch failure, as before.
+
 ## License
 
 MIT

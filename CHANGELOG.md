@@ -1,5 +1,21 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **Tells Dune which Meilisearch failures retrying cannot fix.** `@dune/core` now
+  keeps starting when a search engine fails to build (it logs the failure,
+  retries in the background and falls back to the built-in engine). That is
+  right for an unreachable Meilisearch and wrong for a rejected API key, so a
+  `401`, a `403`, or a `400` from the index or settings call now throws Dune's
+  `SearchConfigError` and stops startup with a message naming the cause.
+  Connection errors, timeouts, `5xx` and other responses stay plain errors that
+  core retries. `SearchConfigError` is read from `@dune/core/search` at load
+  time and falls back to `Error`, so this runs on older cores too (which treat
+  every failure as before). The client's error is now a `MeilisearchHttpError`
+  with a `status`; its message is unchanged.
+
 ## [1.2.5] — 2026-10-27
 
 ### Fixed

@@ -28,6 +28,7 @@ import type {
   SearchResult,
 } from "@dune/core/search";
 import { MeilisearchClient } from "./client.ts";
+import { classifyBuildError } from "./config-error.ts";
 import { extractExcerpt } from "./excerpt.ts";
 import {
   injectedRecordToDocument,
@@ -97,25 +98,31 @@ export function createMeilisearchEngine(
     // ── build ────────────────────────────────────────────────────────────────
 
     async build(): Promise<void> {
-      await client.ensureIndex();
+      try {
+        await client.ensureIndex();
 
-      const settings = {
-        ...DEFAULT_SETTINGS,
-        ...(options.settings ?? {}),
-      };
-      await client.applySettings(settings);
+        const settings = {
+          ...DEFAULT_SETTINGS,
+          ...(options.settings ?? {}),
+        };
+        await client.applySettings(settings);
 
-      const published = pages.filter((p) => p.published && p.route);
-      const pageDocs = await Promise.all(
-        published.map(async (p) => {
-          const body = loadText ? await loadText(p) : "";
-          return pageToDocument({ ...p, body });
-        }),
-      );
+        const published = pages.filter((p) => p.published && p.route);
+        const pageDocs = await Promise.all(
+          published.map(async (p) => {
+            const body = loadText ? await loadText(p) : "";
+            return pageToDocument({ ...p, body });
+          }),
+        );
 
-      const injectedDocs = injectedRecords.map(injectedRecordToDocument);
+        const injectedDocs = injectedRecords.map(injectedRecordToDocument);
 
-      await syncDocuments(client, [...pageDocs, ...injectedDocs]);
+        await syncDocuments(client, [...pageDocs, ...injectedDocs]);
+      } catch (err) {
+        // Dune retries a failed build in the background and falls back to its
+        // built-in engine; only errors retrying cannot fix are marked as such.
+        throw classifyBuildError(err);
+      }
     },
 
     // ── search ───────────────────────────────────────────────────────────────
