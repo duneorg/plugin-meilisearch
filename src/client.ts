@@ -117,7 +117,9 @@ export class MeilisearchClient {
       });
     } catch (err) {
       // 409 Conflict = index already exists — that's fine.
-      if (!(err instanceof MeilisearchHttpError && err.status === 409)) throw err;
+      if (!(err instanceof MeilisearchHttpError && err.status === 409)) {
+        throw err;
+      }
     }
   }
 

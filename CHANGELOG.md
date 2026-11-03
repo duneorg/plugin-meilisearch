@@ -4,8 +4,8 @@
 
 ### Changed
 
-- **Tells Dune which Meilisearch failures retrying cannot fix.** `@dune/core` now
-  keeps starting when a search engine fails to build (it logs the failure,
+- **Tells Dune which Meilisearch failures retrying cannot fix.** `@dune/core`
+  now keeps starting when a search engine fails to build (it logs the failure,
   retries in the background and falls back to the built-in engine). That is
   right for an unreachable Meilisearch and wrong for a rejected API key, so a
   `401`, a `403`, or a `400` from the index or settings call now throws Dune's

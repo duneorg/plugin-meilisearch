@@ -18,7 +18,9 @@ import * as coreSearch from "@dune/core/search";
 import { MeilisearchHttpError } from "./client.ts";
 
 const ConfigError: new (message: string, options?: ErrorOptions) => Error =
-  (coreSearch as unknown as { SearchConfigError?: new (message: string, options?: ErrorOptions) => Error })
+  (coreSearch as unknown as {
+    SearchConfigError?: new (message: string, options?: ErrorOptions) => Error;
+  })
     .SearchConfigError ?? Error;
 
 /**
@@ -33,7 +35,10 @@ export function unrecoverableReason(err: unknown): string | null {
   if (err.status === 403) {
     return "The Meilisearch API key may not do this (403). It needs permission to create the index, change settings and add documents.";
   }
-  if (err.status === 400 && (err.path === "/indexes" || err.path.endsWith("/settings"))) {
+  if (
+    err.status === 400 &&
+    (err.path === "/indexes" || err.path.endsWith("/settings"))
+  ) {
     return "Meilisearch rejected the index settings or name (400). Check `index` and `settings` in the plugin config.";
   }
   return null;
@@ -43,5 +48,7 @@ export function unrecoverableReason(err: unknown): string | null {
 export function classifyBuildError(err: unknown): unknown {
   const reason = unrecoverableReason(err);
   if (!reason) return err;
-  return new ConfigError(`${reason} (${(err as Error).message})`, { cause: err });
+  return new ConfigError(`${reason} (${(err as Error).message})`, {
+    cause: err,
+  });
 }

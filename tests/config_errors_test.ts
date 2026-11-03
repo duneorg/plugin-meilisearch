@@ -30,14 +30,21 @@ async function withServer<T>(
   }
 }
 
-const build = (url: string) => createMeilisearchEngine({ url, index: "t" }).build();
+const build = (url: string) =>
+  createMeilisearchEngine({ url, index: "t" }).build();
 
 Deno.test("build: 401 is a SearchConfigError with an actionable message", async () => {
   await withServer(() => 401, async (url) => {
     const err = await assertRejects(() => build(url));
     // A core that has SearchConfigError gets one; an older core gets a plain Error.
-    assertEquals((err as Error).name === "SearchConfigError", "SearchConfigError" in coreSearch);
-    assert((err as Error).message.includes("rejected the API key"), (err as Error).message);
+    assertEquals(
+      (err as Error).name === "SearchConfigError",
+      "SearchConfigError" in coreSearch,
+    );
+    assert(
+      (err as Error).message.includes("rejected the API key"),
+      (err as Error).message,
+    );
     assert(((err as Error).cause as Error) instanceof MeilisearchHttpError);
   });
 });
@@ -50,16 +57,22 @@ Deno.test("build: 403 is unrecoverable", async () => {
 });
 
 Deno.test("build: 400 on settings is unrecoverable", async () => {
-  await withServer((path) => path.endsWith("/settings") ? 400 : 202, async (url) => {
-    const err = await assertRejects(() => build(url));
-    assert((err as Error).message.includes("index settings"));
-  });
+  await withServer(
+    (path) => path.endsWith("/settings") ? 400 : 202,
+    async (url) => {
+      const err = await assertRejects(() => build(url));
+      assert((err as Error).message.includes("index settings"));
+    },
+  );
 });
 
 Deno.test("build: 5xx and connection errors stay plain, retryable errors", async () => {
   await withServer(() => 503, async (url) => {
     const err = await assertRejects(() => build(url));
-    assert(err instanceof MeilisearchHttpError, "503 is passed through unchanged");
+    assert(
+      err instanceof MeilisearchHttpError,
+      "503 is passed through unchanged",
+    );
   });
   const refused = await assertRejects(() => build("http://127.0.0.1:1"));
   assertEquals(refused instanceof MeilisearchHttpError, false);
@@ -74,7 +87,8 @@ Deno.test("build: an existing index (409) is fine", async () => {
 });
 
 Deno.test("unrecoverableReason: only auth failures and bad settings count", () => {
-  const e = (status: number, path = "/indexes/t/documents") => new MeilisearchHttpError(status, path, "");
+  const e = (status: number, path = "/indexes/t/documents") =>
+    new MeilisearchHttpError(status, path, "");
   assertEquals(unrecoverableReason(e(500)), null);
   assertEquals(unrecoverableReason(e(404)), null);
   assertEquals(unrecoverableReason(e(400, "/indexes/t/documents")), null);
