@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-11-10
+
+### Changed
+
+- Requires `@dune/core` 0.36 (`^0.36.0`): the engine is built against core
+  0.36's search contract.
+
 ### Fixed
 
 - **A resync no longer empties the index.** `syncDocuments()` deleted every
