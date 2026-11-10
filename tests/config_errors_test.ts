@@ -18,10 +18,13 @@ async function withServer<T>(
 ): Promise<T> {
   const server = Deno.serve({ port: 0, onListen: () => {} }, (req) => {
     const status = answer(new URL(req.url).pathname);
-    return new Response(JSON.stringify({ message: `status ${status}` }), {
-      status,
-      headers: { "content-type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ message: `status ${status}`, results: [], total: 0 }),
+      {
+        status,
+        headers: { "content-type": "application/json" },
+      },
+    );
   });
   try {
     return await fn(`http://127.0.0.1:${server.addr.port}`);

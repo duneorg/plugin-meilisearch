@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **A resync no longer empties the index.** `syncDocuments()` deleted every
+  document and then re-added them, so a search that ran during a rebuild found
+  nothing or a partial set. `@dune/core` 0.36 rebuilds search after every
+  content write (admin save, inline edit), which made that window common. It now
+  upserts the current documents and deletes only the ids that are gone, so a
+  search always sees the old set or the new one. `MeilisearchClient` gains
+  `listDocumentIds()` and `deleteDocuments(ids)`.
+
 ## [1.2.6] — 2026-11-03
 
 ### Changed

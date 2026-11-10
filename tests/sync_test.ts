@@ -1,10 +1,12 @@
 /**
- * Unit tests for the PageIndex → MeilisearchDocument mapping.
+ * Unit tests for the PageIndex → MeilisearchDocument mapping and the sync order.
  * No network calls required.
  */
 
 import { assertEquals } from "@std/assert";
-import { pageToDocument, routeToId } from "../src/sync.ts";
+import { pageToDocument, routeToId, syncDocuments } from "../src/sync.ts";
+import type { MeilisearchClient } from "../src/client.ts";
+import type { MeilisearchDocument } from "../src/types.ts";
 import type { PageIndex as PageLike } from "@dune/core/search";
 
 function makePage(overrides: Partial<PageLike> = {}): PageLike {
@@ -83,4 +85,49 @@ Deno.test("pageToDocument: no extra → no extra fields beyond standard", () => 
 Deno.test("pageToDocument: null date preserved", () => {
   const doc = pageToDocument(makePage({ date: null }));
   assertEquals(doc.date, null);
+});
+
+// ── syncDocuments ─────────────────────────────────────────────────────────────
+
+function fakeClient(existing: string[]) {
+  const calls: string[] = [];
+  const client = {
+    listDocumentIds: () => {
+      calls.push("list");
+      return Promise.resolve(existing);
+    },
+    putDocuments: (docs: { id: string }[]) => {
+      calls.push(`put:${docs.map((d) => d.id).join(",")}`);
+      return Promise.resolve({});
+    },
+    deleteDocuments: (ids: string[]) => {
+      calls.push(`delete:${ids.join(",")}`);
+      return Promise.resolve({});
+    },
+    deleteAllDocuments: () => {
+      calls.push("deleteAll");
+      return Promise.resolve({});
+    },
+  };
+  return { client: client as unknown as MeilisearchClient, calls };
+}
+
+const doc = (id: string) => ({ id } as unknown as MeilisearchDocument);
+
+Deno.test("syncDocuments: upserts everything, then deletes only the ids that are gone", async () => {
+  const { client, calls } = fakeClient(["a", "b", "gone"]);
+  await syncDocuments(client, [doc("a"), doc("b"), doc("c")]);
+  assertEquals(calls, ["list", "put:a,b,c", "delete:gone"]);
+});
+
+Deno.test("syncDocuments: never empties the index, and deletes nothing when nothing is stale", async () => {
+  const { client, calls } = fakeClient(["a"]);
+  await syncDocuments(client, [doc("a")]);
+  assertEquals(calls, ["list", "put:a"]);
+});
+
+Deno.test("syncDocuments: batches puts and deletes", async () => {
+  const { client, calls } = fakeClient(["x", "y", "z"]);
+  await syncDocuments(client, [doc("a"), doc("b"), doc("c")], 2);
+  assertEquals(calls, ["list", "put:a,b", "put:c", "delete:x,y", "delete:z"]);
 });
