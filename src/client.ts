@@ -149,6 +149,32 @@ export class MeilisearchClient {
     );
   }
 
+  /** The `id` of every document in the index, read page by page. */
+  async listDocumentIds(pageSize = 1000): Promise<string[]> {
+    const ids: string[] = [];
+    for (let offset = 0;;) {
+      const page = await this.#json<
+        { results: { id: string }[]; total: number }
+      >(
+        `/indexes/${this.#index}/documents?fields=id&limit=${pageSize}&offset=${offset}`,
+      );
+      for (const doc of page.results) ids.push(String(doc.id));
+      offset += page.results.length;
+      if (page.results.length === 0 || offset >= page.total) return ids;
+    }
+  }
+
+  /** Delete the documents with the given ids. */
+  async deleteDocuments(ids: string[]): Promise<MeilisearchTask> {
+    return await this.#json<MeilisearchTask>(
+      `/indexes/${this.#index}/documents/delete-batch`,
+      {
+        method: "POST",
+        body: JSON.stringify(ids),
+      },
+    );
+  }
+
   /** Delete all documents from the index (keeps settings). */
   async deleteAllDocuments(): Promise<MeilisearchTask> {
     return await this.#json<MeilisearchTask>(

@@ -72,24 +72,34 @@ export function routeToId(route: string): string {
 }
 
 /**
- * Push a set of pre-built documents to Meilisearch in batches.
- * Replaces the entire index content (delete-all then put).
+ * Push a set of pre-built documents to Meilisearch in batches, making the
+ * index match them.
+ *
+ * Upserts the documents first, then deletes only the ids that are no longer
+ * wanted. The index is never emptied, so a search running during a resync sees
+ * the old documents or the new ones, not nothing (Dune resyncs after every
+ * content write).
  */
 export async function syncDocuments(
   client: MeilisearchClient,
   docs: MeilisearchDocument[],
   batchSize = 500,
 ): Promise<void> {
-  await client.deleteAllDocuments();
+  const existing = await client.listDocumentIds();
 
   for (let i = 0; i < docs.length; i += batchSize) {
     await client.putDocuments(docs.slice(i, i + batchSize));
   }
+
+  const wanted = new Set(docs.map((d) => d.id));
+  const stale = existing.filter((id) => !wanted.has(id));
+  for (let i = 0; i < stale.length; i += batchSize) {
+    await client.deleteDocuments(stale.slice(i, i + batchSize));
+  }
 }
 
 /**
- * Sync a set of pages to Meilisearch in batches.
- * Replaces the entire index content (delete-all then put).
+ * Sync a set of pages to Meilisearch in batches; see {@link syncDocuments}.
  */
 export async function syncPages(
   client: MeilisearchClient,
