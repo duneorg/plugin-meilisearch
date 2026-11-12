@@ -8,7 +8,7 @@
  */
 
 import { assertEquals } from "@std/assert";
-import type { PageIndex } from "@dune/core/search";
+import type { PageIndex } from "@dune/plugin-api";
 import { createMeilisearchEngine } from "../src/engine.ts";
 import { MeilisearchClient } from "../src/client.ts";
 

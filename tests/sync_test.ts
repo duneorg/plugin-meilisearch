@@ -7,7 +7,7 @@ import { assertEquals } from "@std/assert";
 import { pageToDocument, routeToId, syncDocuments } from "../src/sync.ts";
 import type { MeilisearchClient } from "../src/client.ts";
 import type { MeilisearchDocument } from "../src/types.ts";
-import type { PageIndex as PageLike } from "@dune/core/search";
+import type { PageIndex as PageLike } from "@dune/plugin-api";
 
 function makePage(overrides: Partial<PageLike> = {}): PageLike {
   return {
