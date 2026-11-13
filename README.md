@@ -149,8 +149,8 @@ and bind it to `127.0.0.1` only — no public exposure needed.
 
 ## When Meilisearch is down
 
-With a recent `@dune/core` (the release that adds `SearchConfigError`), an
-unreachable Meilisearch does not stop your site from starting:
+With Dune 0.36 or later, an unreachable Meilisearch does not stop your site from
+starting:
 
 - Dune logs `search.engine.failed` once, with the cause, and keeps serving
   content.

@@ -5,23 +5,14 @@
  * background and falls back to the built-in engine. That is right for an
  * unreachable server and wrong for a rejected API key, which retrying cannot
  * fix and which should stop startup with a clear message. Dune recognises the
- * second kind by the `SearchConfigError` class from `@dune/core/search`.
- *
- * That class only exists in newer cores. It is looked up on the module
- * namespace (a named import would fail to load on an older core) and falls
- * back to a plain `Error`, which an older core treats like any other failure.
+ * second kind by the `SearchConfigError` class, which it matches by name, so
+ * the one from `@dune/plugin-api` is recognised whichever copy of core runs.
  *
  * @module
  */
 
-import * as coreSearch from "@dune/core/search";
+import { SearchConfigError } from "@dune/plugin-api";
 import { MeilisearchHttpError } from "./client.ts";
-
-const ConfigError: new (message: string, options?: ErrorOptions) => Error =
-  (coreSearch as unknown as {
-    SearchConfigError?: new (message: string, options?: ErrorOptions) => Error;
-  })
-    .SearchConfigError ?? Error;
 
 /**
  * The reason retrying cannot help, or null when the failure may be transient
@@ -48,7 +39,7 @@ export function unrecoverableReason(err: unknown): string | null {
 export function classifyBuildError(err: unknown): unknown {
   const reason = unrecoverableReason(err);
   if (!reason) return err;
-  return new ConfigError(`${reason} (${(err as Error).message})`, {
+  return new SearchConfigError(`${reason} (${(err as Error).message})`, {
     cause: err,
   });
 }

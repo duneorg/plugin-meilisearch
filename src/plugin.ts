@@ -22,8 +22,8 @@
  * @module
  */
 
-import type { SearchEngineCreateContext } from "@dune/core/search";
-import type { DunePlugin } from "@dune/core/hooks";
+import type { SearchEngineCreateContext } from "@dune/plugin-api";
+import type { DunePlugin } from "@dune/plugin-api";
 import { createMeilisearchEngine } from "./engine.ts";
 import type { MeilisearchIndexSettings } from "./types.ts";
 

@@ -81,8 +81,8 @@ export type {
   /** Lets the engine populate document bodies and index plugin-injected records. */
   MeilisearchEngineRuntime,
 } from "./engine.ts";
-// SearchEngine and SearchResult are re-exported from @dune/core/search
-export type { SearchEngine, SearchResult } from "@dune/core/search";
+// SearchEngine and SearchResult are re-exported from @dune/plugin-api
+export type { SearchEngine, SearchResult } from "@dune/plugin-api";
 export {
   /** Minimal HTTP client wrapping Meilisearch's REST API. */
   MeilisearchClient,

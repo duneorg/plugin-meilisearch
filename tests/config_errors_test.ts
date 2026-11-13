@@ -6,7 +6,6 @@
  */
 
 import { assert, assertEquals, assertRejects } from "@std/assert";
-import * as coreSearch from "@dune/core/search";
 import { createMeilisearchEngine } from "../src/engine.ts";
 import { unrecoverableReason } from "../src/config-error.ts";
 import { MeilisearchHttpError } from "../src/client.ts";
@@ -39,11 +38,7 @@ const build = (url: string) =>
 Deno.test("build: 401 is a SearchConfigError with an actionable message", async () => {
   await withServer(() => 401, async (url) => {
     const err = await assertRejects(() => build(url));
-    // A core that has SearchConfigError gets one; an older core gets a plain Error.
-    assertEquals(
-      (err as Error).name === "SearchConfigError",
-      "SearchConfigError" in coreSearch,
-    );
+    assertEquals((err as Error).name, "SearchConfigError");
     assert(
       (err as Error).message.includes("rejected the API key"),
       (err as Error).message,

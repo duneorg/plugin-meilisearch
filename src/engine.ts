@@ -26,7 +26,7 @@ import type {
   SearchFilter,
   SearchOptions,
   SearchResult,
-} from "@dune/core/search";
+} from "@dune/plugin-api";
 import { MeilisearchClient } from "./client.ts";
 import { classifyBuildError } from "./config-error.ts";
 import { extractExcerpt } from "./excerpt.ts";
