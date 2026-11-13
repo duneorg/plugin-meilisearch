@@ -18,7 +18,7 @@
     "@dune/plugin-api": "jsr:@dune/plugin-api@^1.2.0"
   },
   "tasks": {
-    "test": "deno test --allow-net --allow-env tests/",
+    "test": "deno test --allow-net --allow-env --allow-read tests/",
     "check": "deno fmt --check && deno lint && deno check src/**/*.ts tests/**/*.ts"
   },
   "lint": {
